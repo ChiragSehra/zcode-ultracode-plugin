@@ -117,6 +117,22 @@ for (const f of walkMd("plugin")) {
 }
 pass(`frontmatter valid on ${fmChecked} plugin markdown file(s)`);
 
+// --- Claude Code workflow ports parse as ESM ---
+if (existsSync(rel("plugin/workflows"))) {
+  const ccFiles = readdirSync(rel("plugin/workflows")).filter((f) => f.endsWith(".js"));
+  for (const f of ccFiles) {
+    try {
+      execFileSync("node", ["--input-type=module", "--check"], {
+        input: readFileSync(rel(`plugin/workflows/${f}`), "utf8"),
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      pass(`plugin/workflows/${f} parses as ESM`);
+    } catch (e) {
+      fail(`plugin/workflows/${f}: ${e.stderr !== undefined && e.stderr !== "" ? e.stderr : e.message}`);
+    }
+  }
+}
+
 // --- the six pattern workflows exist and keep their shape ---
 const patterns = ["research", "implement", "audit", "decide", "converge", "sweep"];
 for (const name of patterns) {

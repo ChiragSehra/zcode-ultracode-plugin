@@ -53,6 +53,15 @@ on the author's machine. If your Z.ai account prefix differs (e.g. `bigmodel-…
 `plugin/skills/ultracode/SKILL.md` §3) to your own ids. The saved workflows set no model
 themselves — the caller applies the tier, so they need no edits.
 
+## Claude Code adapter (experimental)
+
+`plugin/workflows/*.js` carries Claude Code dialect ports of the patterns — `decide` and
+`sweep` are ported (`/ultracode:decide`, `/ultracode:sweep` after installing this repo as
+a CC plugin marketplace). The ZCode originals remain the reference implementation: CC's
+runtime has no in-script shell or file reads, so deterministic gates and salvage don't
+port 1:1 — `implement`/`converge` stay unported until the gate redesign lands. Full
+mapping and honest degradation notes: [docs/cc-adapter.md](docs/cc-adapter.md).
+
 ## The repo gates itself
 
 `npm test` — zero dependencies — checks what this repo has actually gotten wrong:
