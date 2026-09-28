@@ -56,7 +56,7 @@ The strongest gate always runs at least once after the last change.
 |---|---|---|---|
 | `task` | string | required | the user's words |
 | `size` | s / m / l | m | s≤3 packets/4 reviewers, m≤6/6, l≤10/30 |
-| `gates` | json | auto-detect | forced check: `{"kind":"npm\|make\|cargo\|pytest\|node","args":["test.js"]}` (`node` runs the files in `args`). Auto-detected when omitted: `npm test` (`package.json` `scripts.test`), `make test` (`Makefile`), `cargo test` (`Cargo.toml`) — every one present runs; none found in a git repo → `git diff --check` (whitespace/conflict markers). `pytest` and `node` are override-only. |
+| `gates` | json | auto-detect | **Auto-discovery** (order of trust): the repo's CI belief (a `run: <tool> test` line in `.github/workflows/**`), then markers — pnpm/yarn/bun lockfiles pick the runner for `package.json` `scripts.test`; `Cargo.toml` → `cargo test`; `go.mod` → `go test ./...`; `pyproject.toml` + `tests/` → `pytest`; `build.gradle*` → `gradle test`; `mix.exs` → `mix test`; `*.csproj\|*.sln` → `dotnet test`; `deno.json*` → `deno test`; Makefile `test:`/`check:` target → `make test`/`make check`. Fast tiers (`npm run lint`/`typecheck` when the scripts exist) precede the strong test gate; ≤3 gates; git-repo fallback `git diff --check`. Detection only selects among compile-time literal commands — the user still approves the exact command set. Override: `{"kind":"npm\|pnpm\|yarn\|bun\|deno\|make\|make-check\|cargo\|go\|pytest\|gradle\|mix\|dotnet\|node","args":["test.js"]}` (`node` runs the files in `args`). |
 
 Worst case: s=14, m=19, l=47 agents — planner, plan reviewer, ≤cap implementers, repairer,
 ≤cap reviewers, plus at most 4 fixers in the fix round. Run tier: GLM-5.3-Flash$high.

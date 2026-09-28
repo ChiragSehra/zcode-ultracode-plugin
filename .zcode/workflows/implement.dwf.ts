@@ -1,9 +1,11 @@
 /* zcode-workflow
 description: "Implement with verification: planner emits typed task packets, a
-  fresh reviewer checks the plan, packets execute in parallel, deterministic
-  build/test gates (world.run) drive a capped repair loop, then an independent
-  reviewer per changed file with one capped fix round. Diff-summary artifact.
-  Default run model: GLM-5.3-Flash."
+  fresh reviewer checks the plan, packets execute in parallel, then
+  auto-discovered deterministic gates (CI-believed tool, lockfile markers,
+  lint/typecheck fast tiers, Makefile targets, git-diff fallback; overridable
+  via gates.kind) drive a capped repair loop, then an independent reviewer per
+  changed file with one capped fix round. Diff-summary artifact. Default run
+  model: GLM-5.3-Flash$high."
 whenToUse: Use when the user asks to implement or change something substantial
   enough to deserve plan → parallel execution → build/test gates → independent
   review (/uc:implement or /ultracode routed to implement). For a one-line fix
@@ -11,9 +13,9 @@ whenToUse: Use when the user asks to implement or change something substantial
 args:
   gates:
     type: json
-    description: 'Optional gate override: {"kind": "npm|make|cargo|pytest|node",
-      "args": ["file.js"]} — the check command the run gates on (node takes the
-      test entry file(s) in args).'
+    description: 'Optional gate override bypassing auto-discovery: {"kind":
+      "npm|pnpm|yarn|bun|deno|make|make-check|cargo|go|pytest|gradle|mix|dotnet|node",
+      "args": ["file.js"]} (node takes the test entry file(s) in args).'
   size:
     type: string
     description: "s: ≤3 packets, ≤4 file reviewers; m (default): ≤6 packets, ≤6
@@ -67,7 +69,11 @@ interface SkepticVerdict {
   /** Problems found, with path:line evidence. */
   issues: { where: string; what: string }[];
 }
-type GateKind = "npm" | "make" | "cargo" | "pytest" | "node" | "gitcheck";
+type GateKind =
+  | "npm" | "pnpm" | "yarn" | "bun" | "deno"
+  | "npm-lint" | "npm-typecheck"
+  | "make" | "make-check" | "cargo" | "go" | "pytest" | "gradle" | "mix" | "dotnet"
+  | "node" | "gitcheck";
 interface GateSpec {
   kind: GateKind;
   argv: string[];
@@ -81,18 +87,44 @@ const gateArgv = rawGateArgs.map((a) => String(a));
 
 function gateFor(kind: string, argv: string[]): GateSpec | null {
   if (kind === "npm") return { kind: "npm", argv: [], label: "npm test" };
+  if (kind === "pnpm") return { kind: "pnpm", argv: [], label: "pnpm test" };
+  if (kind === "yarn") return { kind: "yarn", argv: [], label: "yarn test" };
+  if (kind === "bun") return { kind: "bun", argv: [], label: "bun test" };
+  if (kind === "deno") return { kind: "deno", argv: [], label: "deno test" };
   if (kind === "make") return { kind: "make", argv: [], label: "make test" };
+  if (kind === "make-check") return { kind: "make-check", argv: [], label: "make check" };
   if (kind === "cargo") return { kind: "cargo", argv: [], label: "cargo test" };
+  if (kind === "go") return { kind: "go", argv: [], label: "go test ./..." };
   if (kind === "pytest") return { kind: "pytest", argv: [], label: "pytest" };
+  if (kind === "gradle") return { kind: "gradle", argv: [], label: "gradle test" };
+  if (kind === "mix") return { kind: "mix", argv: [], label: "mix test" };
+  if (kind === "dotnet") return { kind: "dotnet", argv: [], label: "dotnet test" };
   if (kind === "node") return { kind: "node", argv, label: "node test" };
   return null;
 }
 
-let gates: GateSpec[] = [];
-const chosen = gateKind !== null ? gateFor(gateKind, gateArgv) : null;
-if (chosen !== null) {
-  gates = [chosen];
-} else {
+// Auto-discovery, in order of trust: the repo's own CI config names the tool it believes
+// in; lockfiles and markers corroborate; fast tiers (lint/typecheck) precede the strong
+// test gate; detection only ever selects among the compile-time literals in runGate.
+async function detectGates(): Promise<GateSpec[]> {
+  const found: GateSpec[] = [];
+  const has = async (pattern: string) => (await files.glob(pattern)).length > 0;
+
+  let ciTool: string | null = null;
+  try {
+    const ciRuns = await files.grep(
+      "run:.{0,120}(npm|pnpm|yarn|bun|deno|cargo|go|pytest|gradle|mix|dotnet|make).{0,40}test",
+      ".github/workflows/**",
+    );
+    const tools = ["pnpm", "yarn", "bun", "deno", "cargo", "pytest", "gradle", "mix", "dotnet", "make", "go", "npm"];
+    for (const m of ciRuns.slice(0, 10)) {
+      ciTool = tools.find((t) => new RegExp(`\\b${t}\\b`).test(m.text)) ?? null;
+      if (ciTool !== null) break;
+    }
+  } catch {
+    ciTool = null;
+  }
+
   let pkg: unknown = null;
   try {
     pkg = JSON.parse(await files.read("package.json"));
@@ -100,16 +132,63 @@ if (chosen !== null) {
     pkg = null;
   }
   const scripts = (pkg as { scripts?: Record<string, unknown> } | null)?.scripts;
-  if (scripts !== undefined && typeof scripts.test === "string") {
-    gates.push({ kind: "npm", argv: [], label: "npm test" });
+  const hasTest = scripts !== undefined && typeof scripts.test === "string";
+  if (scripts !== undefined && typeof scripts.lint === "string") {
+    found.push({ kind: "npm-lint", argv: [], label: "npm run lint (fast)" });
   }
-  if ((await files.glob("Makefile")).length > 0) {
-    gates.push({ kind: "make", argv: [], label: "make test" });
+  if (scripts !== undefined && typeof scripts.typecheck === "string") {
+    found.push({ kind: "npm-typecheck", argv: [], label: "npm run typecheck (fast)" });
   }
-  if ((await files.glob("Cargo.toml")).length > 0) {
-    gates.push({ kind: "cargo", argv: [], label: "cargo test" });
+  if (hasTest) {
+    const runner =
+      ciTool === "pnpm" || ciTool === "yarn" || ciTool === "bun"
+        ? ciTool
+        : await has("pnpm-lock.yaml")
+          ? "pnpm"
+          : await has("yarn.lock")
+            ? "yarn"
+            : await has("bun.lockb")
+              ? "bun"
+              : "npm";
+    found.push({ kind: runner as GateKind, argv: [], label: `${runner} test` });
   }
-  if (gates.length === 0) {
+  if ((await has("deno.json*")) || ciTool === "deno") {
+    found.push({ kind: "deno", argv: [], label: "deno test" });
+  }
+  if (await has("Cargo.toml") || ciTool === "cargo") {
+    found.push({ kind: "cargo", argv: [], label: "cargo test" });
+  }
+  if (await has("go.mod") || ciTool === "go") {
+    found.push({ kind: "go", argv: [], label: "go test ./..." });
+  }
+  if ((await has("pyproject.toml") && (await has("tests/**") || await has("test/**"))) || ciTool === "pytest") {
+    found.push({ kind: "pytest", argv: [], label: "pytest" });
+  }
+  if (await has("build.gradle*") || ciTool === "gradle") {
+    found.push({ kind: "gradle", argv: [], label: "gradle test" });
+  }
+  if (await has("mix.exs") || ciTool === "mix") {
+    found.push({ kind: "mix", argv: [], label: "mix test" });
+  }
+  if ((await has("*.csproj") || await has("*.sln")) || ciTool === "dotnet") {
+    found.push({ kind: "dotnet", argv: [], label: "dotnet test" });
+  }
+  if (await has("Makefile")) {
+    let mk = "";
+    try {
+      mk = await files.read("Makefile");
+    } catch {
+      mk = "";
+    }
+    if (/(^|\n)test:/.test(mk) || ciTool === "make") {
+      found.push({ kind: "make", argv: [], label: "make test" });
+    } else if (/(^|\n)check:/.test(mk)) {
+      found.push({ kind: "make-check", argv: [], label: "make check" });
+    }
+  }
+
+  const capped = found.slice(0, 3);
+  if (capped.length === 0) {
     let inGitRepo = true;
     try {
       await git.status();
@@ -117,34 +196,42 @@ if (chosen !== null) {
       inGitRepo = false;
     }
     if (inGitRepo) {
-      gates.push({ kind: "gitcheck", argv: [], label: "git diff --check" });
+      capped.push({ kind: "gitcheck", argv: [], label: "git diff --check" });
     }
   }
+  return capped;
+}
+
+let gates: GateSpec[] = [];
+const chosen = gateKind !== null ? gateFor(gateKind, gateArgv) : null;
+if (chosen !== null) {
+  gates = [chosen];
+} else {
+  gates = await detectGates();
+}
+
+function outcome(g: GateSpec, r: { exitCode: number; stdout: string; stderr: string }): { label: string; ok: boolean; output: string } {
+  return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
 }
 
 async function runGate(g: GateSpec): Promise<{ label: string; ok: boolean; output: string }> {
-  if (g.kind === "npm") {
-    const r = await world.run("npm", ["test"], { timeoutMs: 900000 });
-    return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
-  }
-  if (g.kind === "make") {
-    const r = await world.run("make", ["test"], { timeoutMs: 900000 });
-    return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
-  }
-  if (g.kind === "cargo") {
-    const r = await world.run("cargo", ["test"], { timeoutMs: 900000 });
-    return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
-  }
-  if (g.kind === "pytest") {
-    const r = await world.run("python3", ["-m", "pytest"], { timeoutMs: 900000 });
-    return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
-  }
-  if (g.kind === "node") {
-    const r = await world.run("node", g.argv.length > 0 ? g.argv : ["test.js"], { timeoutMs: 900000 });
-    return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
-  }
-  const r = await world.run("git", ["diff", "--check"], { timeoutMs: 60000 });
-  return { label: g.label, ok: r.exitCode === 0, output: `${r.stdout}\n${r.stderr}`.slice(0, 4000) };
+  if (g.kind === "npm") return outcome(g, await world.run("npm", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "pnpm") return outcome(g, await world.run("pnpm", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "yarn") return outcome(g, await world.run("yarn", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "bun") return outcome(g, await world.run("bun", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "deno") return outcome(g, await world.run("deno", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "npm-lint") return outcome(g, await world.run("npm", ["run", "lint"], { timeoutMs: 600000 }));
+  if (g.kind === "npm-typecheck") return outcome(g, await world.run("npm", ["run", "typecheck"], { timeoutMs: 600000 }));
+  if (g.kind === "make") return outcome(g, await world.run("make", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "make-check") return outcome(g, await world.run("make", ["check"], { timeoutMs: 900000 }));
+  if (g.kind === "cargo") return outcome(g, await world.run("cargo", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "go") return outcome(g, await world.run("go", ["test", "./..."], { timeoutMs: 900000 }));
+  if (g.kind === "pytest") return outcome(g, await world.run("python3", ["-m", "pytest"], { timeoutMs: 900000 }));
+  if (g.kind === "gradle") return outcome(g, await world.run("gradle", ["test"], { timeoutMs: 1800000 }));
+  if (g.kind === "mix") return outcome(g, await world.run("mix", ["test"], { timeoutMs: 900000 }));
+  if (g.kind === "dotnet") return outcome(g, await world.run("dotnet", ["test"], { timeoutMs: 1800000 }));
+  if (g.kind === "node") return outcome(g, await world.run("node", g.argv.length > 0 ? g.argv : ["test.js"], { timeoutMs: 900000 }));
+  return outcome(g, await world.run("git", ["diff", "--check"], { timeoutMs: 60000 }));
 }
 
 phase("Plan the change as independent packets");
