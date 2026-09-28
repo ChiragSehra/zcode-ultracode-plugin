@@ -1,0 +1,5 @@
+{
+  "name": "ultracode",
+  "version": "1.0.0",
+  "description": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, six workflow patterns, role agents, and a destructive-command guard hook."
+}

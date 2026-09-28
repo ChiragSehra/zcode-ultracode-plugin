@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# ZCode workflow drafts (machine-owned)
+.zcode/workflow-drafts/
+
+# local security scanner state
+.mimosa/
+
+# node
+node_modules/

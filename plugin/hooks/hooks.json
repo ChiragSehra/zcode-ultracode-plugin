@@ -1,0 +1,21 @@
+{
+  "description": "Ultracode destructive-command guard: denies a small, high-confidence list of irreversible one-liners so they become a permission ask instead of silent damage.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "process",
+            "command": "node",
+            "args": [
+              "${ZCODE_PLUGIN_ROOT}/hooks/guard.mjs"
+            ],
+            "timeoutMs": 15000,
+            "statusMessage": "ultracode 检查命令安全性…"
+          }
+        ]
+      }
+    ]
+  }
+}

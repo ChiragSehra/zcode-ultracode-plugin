@@ -1,0 +1,13 @@
+{
+  "name": "ultracode-local",
+  "version": 1,
+  "description": "Local marketplace for the ultracode-glm plugin.",
+  "plugins": [
+    {
+      "name": "ultracode",
+      "version": "1.0.0",
+      "description": "Ultracode for GLM: budget-aware orchestration — router skill, six workflow patterns (research, implement, audit, decide, converge, sweep), role agents, destructive-command guard.",
+      "source": "./plugin"
+    }
+  ]
+}
