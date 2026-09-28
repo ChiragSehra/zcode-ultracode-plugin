@@ -166,12 +166,12 @@ confirmer; if fan-out is expensive, verification rounds are capped at 2 before e
 
 ### 4.4 The economics engine
 
-| Size class | Subagent budget (approx) | Who can authorize | Typical use |
+| Size class | Subagent budget | Who can authorize | Typical use |
 |---|---|---|---|
-| S | ≤ 8 | any request | focused question, small audit |
-| M (default) | ≤ 18 | any request | standard implement/audit |
-| L | ≤ 36 | explicit in args | large sweep, deep research |
-| XL | > 36 | explicit `size:"xl"` only | migrations, repo-wide change |
+| S | ≤ 14 | any request | focused question, small audit |
+| M (default) | ≤ 20 | any request | standard implement/audit |
+| L | ≤ 48 | explicit in args | large sweep, deep research |
+| XL | > 48 | explicit `size:"xl"` only | migrations, repo-wide change |
 
 - **Tier policy**: ≥ 70% of a run's subagents on Flash wherever the pattern allows; the
   session model (already paid for) does final synthesis instead of an expensive in-run

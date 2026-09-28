@@ -11,7 +11,7 @@ architecture before making structural changes.
    is orchestration-shaped but the user didn't ask, propose the matching pattern **once**;
    if declined, don't re-propose this session and just do the work (Agent tool or inline).
 2. **Follow the router and budgets** in `plugin/skills/ultracode/SKILL.md` — size classes
-   (default M ≤ 12 subagents), tier policy, round caps. Never launch an unbounded loop.
+   (default M ≤ 20 subagents), tier policy, round caps. Never launch an unbounded loop.
 3. **Revision = AmendWorkflow**, not a fresh CreateWorkflow: stable subagent names in the
    pattern scripts exist so unchanged asks replay at zero tokens.
 4. **Editing the pattern library** (`.zcode/workflows/*.dwf.ts`): load the bundled

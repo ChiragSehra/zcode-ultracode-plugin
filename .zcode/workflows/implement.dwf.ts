@@ -2,8 +2,8 @@
 description: "Implement with verification: planner emits typed task packets, a
   fresh reviewer checks the plan, packets execute in parallel, deterministic
   build/test gates (world.run) drive a capped repair loop, then an independent
-  reviewer per changed file with one fix round. Diff-summary artifact. Default
-  run model: GLM-5.3-Flash."
+  reviewer per changed file with one capped fix round. Diff-summary artifact.
+  Default run model: GLM-5.3-Flash."
 whenToUse: Use when the user asks to implement or change something substantial
   enough to deserve plan → parallel execution → build/test gates → independent
   review (/uc:implement or /ultracode routed to implement). For a one-line fix
@@ -17,7 +17,7 @@ args:
   size:
     type: string
     description: "s: ≤3 packets, ≤4 file reviewers; m (default): ≤6 packets, ≤6
-      reviewers; l: ≤10 packets, ≤30 reviewers."
+      reviewers; l: ≤10 packets, ≤30 reviewers. Fix round capped at 4 fixers."
     default: m
   task:
     type: string
@@ -245,7 +245,7 @@ if (reviewTargets.length > 0) {
       return { file: f, ...v };
     }),
   );
-  const flagged = verdicts.filter((v) => !v.sound && v.issues.length > 0);
+  const flagged = verdicts.filter((v) => !v.sound && v.issues.length > 0).slice(0, 4);
   if (flagged.length > 0) {
     await Promise.all(
       flagged.map((v) =>

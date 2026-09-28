@@ -1,8 +1,9 @@
 /* zcode-workflow
 description: "Tournament decision: frame criteria, build each candidate's
-  strongest honest case in parallel, one shared judge ranks pairwise
-  (comparative judgment), a challenger stress-tests the verdict. Winner,
-  ordering, tradeoffs and failure modes in an artifact. Runs on GLM-5.3-Flash."
+  strongest honest case in parallel, one shared judge settles the ordering by
+  pairwise comparison (scores only summarize the pairwise outcome), a challenger
+  stress-tests the verdict. Winner, ordering, tradeoffs and failure modes in an
+  artifact. Runs on GLM-5.3-Flash."
 whenToUse: Use when the user asks for a decision between options where judgment
   and tradeoffs matter (/uc:decide or /ultracode routed to decide) — technology
   choices, naming, prioritization. For questions with a single verifiable
@@ -50,7 +51,7 @@ interface CaseBrief {
 interface RankingEntry {
   /** Candidate name. */
   name: string;
-  /** Score on the judge's consistent 0-100 scale. */
+  /** Summary score (0-100) derived from the pairwise comparisons, not an independent rating. */
   score: number;
   /** One sentence: why it lands here. */
   why: string;
@@ -105,7 +106,7 @@ const judgment = await agent("judge", {
   system:
     "You judge by pairwise comparison on one consistent scale — comparative judgment, not absolute scoring. Cite which comparison decided the winner. You rank, you do not flatter: the winner's costs stay in the output.",
 }).ask<Judgment>(
-  `Question: ${question}\nCriteria: ${JSON.stringify(framing.criteria)}\nCase briefs: ${JSON.stringify(briefs)}\n\nCompare the candidates pairwise against the criteria, rank them best-first with scores on a consistent 0-100 scale, and name the decisive comparison.`,
+  `Question: ${question}\nCriteria: ${JSON.stringify(framing.criteria)}\nCase briefs: ${JSON.stringify(briefs)}\n\nCompare the candidates pairwise against the criteria until the ordering is settled, then rank them best-first. Assign each a 0-100 score only as a consistent summary of the pairwise outcome — not as an independent absolute rating — and name the decisive comparison.`,
 );
 
 phase("Stress-test the verdict");

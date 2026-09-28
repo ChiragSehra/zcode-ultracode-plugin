@@ -1,8 +1,9 @@
 /* zcode-workflow
 description: "Converge on a goal: typed stop-conditions defined up front, a
-  persistent worker and strict checker iterate (capped rounds, feedback carried
-  forward), then a fresh verifier who saw no rounds judges the result. Progress
-  chart while it runs; deliverable artifact. Runs on GLM-5.3-Flash."
+  persistent worker and strict checker iterate (capped rounds, checker gaps
+  carried into the next worker round), then a fresh verifier who saw no rounds
+  judges the result. Progress chart while it runs; deliverable artifact. Runs on
+  GLM-5.3-Flash."
 whenToUse: Use when the user asks to iterate something until it's genuinely done
   against explicit criteria (/uc:converge or /ultracode routed to converge) — a
   polished draft, a passing benchmark, a checklist. For implement-with-tests,
@@ -86,14 +87,16 @@ const checker = agent("checker", {
 phase("Iterate until the conditions pass");
 let outcome: DraftOutcome = { change: "no draft yet", path: plan.artifactPath };
 let passing = 0;
+let feedback = "(first round — no checker feedback yet)";
 for (let round = 1; round <= maxRounds; round++) {
   outcome = await worker.ask<DraftOutcome>(
-    `Goal:\n${goal}\n\nConditions for done:\n${conditionList}\n\nProduce or revise the deliverable so the conditions pass. Deliverable path: ${plan.artifactPath ?? "(your choice — name it in the result)"}. Previous round: ${outcome.change}`,
+    `Goal:\n${goal}\n\nConditions for done:\n${conditionList}\n\nProduce or revise the deliverable so the conditions pass. Deliverable path: ${plan.artifactPath ?? "(your choice — name it in the result)"}. Previous round: ${outcome.change}\nChecker gaps to close: ${feedback}`,
   );
   const check = await checker.ask<CheckResult>(
     `Judge each condition against the deliverable now on disk. Deliverable path: ${outcome.path ?? "(inspect the workspace)"}.\n\nConditions:\n${conditionList}`,
   );
   passing = check.verdicts.filter((v) => v.pass).length;
+  feedback = check.verdicts.filter((v) => !v.pass).map((v) => v.gap).join("; ") || "(none — all conditions passing)";
   report({ round, passed: passing, total: conditions.length }, "progress");
   log(`Round ${round}/${maxRounds}: ${passing}/${conditions.length} conditions pass`);
   if (passing === conditions.length) {

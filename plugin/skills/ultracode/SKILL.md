@@ -67,16 +67,17 @@ of the returned report. Run subagents go on the cheap tier:
 
 ## 4. Size classes and budgets
 
-| Class | Subagent cap (approx) | Authorized by | Notes |
+| Class | Subagent cap | Authorized by | Notes |
 |---|---|---|---|
-| S | ≤ 8 | any request | focused question, small audit |
-| M (default) | ≤ 18 | any request | standard implement/audit |
-| L | ≤ 36 | explicit `size:"l"` in args | deep research, wide sweep |
-| XL | > 36 | explicit `size:"xl"` only | migrations; propose off-peak |
+| S | ≤ 14 | any request | focused question, small audit |
+| M (default) | ≤ 20 | any request | standard implement/audit |
+| L | ≤ 48 | explicit `size:"l"` in args | deep research, wide sweep |
+| XL | > 48 | explicit `size:"xl"` only | migrations; propose off-peak |
 
-Caps are ceilings on fan-out width, tuned per pattern (each pattern script documents its
-own worst case — e.g. `implement` at M: planner + plan reviewer + 6 implementers +
-repairer + file reviewers + one fix round ≈ 18).
+Caps are the per-pattern maxima at the largest size each class authorizes — e.g.
+`implement` at L: planner + plan reviewer + 10 implementers + repairer + 30 file
+reviewers + 4 fixers = 47. Other patterns sit well below their class ceiling
+(`docs/patterns.md` carries each pattern's exact worst case).
 
 Round caps (write them into the script, never unbounded loops): gate-repair ≤ 2,
 verify-fix ≤ 2, converge `maxRounds` default 3. On budget exhaustion, **escalate to the
