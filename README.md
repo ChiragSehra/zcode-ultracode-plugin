@@ -1,5 +1,7 @@
 # ultracode-glm
 
+[![CI](https://github.com/ChiragSehra/zcode-ultracode-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiragSehra/zcode-ultracode-plugin/actions/workflows/ci.yml)
+
 **Ultracode for GLM** — a budget-aware, gate-first orchestration layer that brings the shape
 of Claude Code's `ultracode` to GLM on ZCode's native dynamic-workflow runtime.
 
@@ -50,6 +52,16 @@ on the author's machine. If your Z.ai account prefix differs (e.g. `bigmodel-…
 `ListModels` in ZCode and update those two lines (and the tier examples in
 `plugin/skills/ultracode/SKILL.md` §3) to your own ids. The saved workflows set no model
 themselves — the caller applies the tier, so they need no edits.
+
+## The repo gates itself
+
+`npm test` — zero dependencies — checks what this repo has actually gotten wrong:
+manifest name/version agreement, command/agent/skill frontmatter validity (including the
+unquoted-`': '` bug class), the six pattern workflows' shape, guard-hook allow/deny
+behavior on live cases, and the toy test suite. `npm run lint` verifies every internal
+markdown reference resolves. CI (`.github/workflows/ci.yml`) runs both on every push —
+which also means `implement`'s gate auto-discovery finds `npm run lint` + `npm test` here
+with zero configuration.
 
 ## The one-line pitch
 

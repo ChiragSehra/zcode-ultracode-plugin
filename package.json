@@ -1,0 +1,18 @@
+{
+  "name": "ultracode-glm",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Ultracode for GLM — budget-aware orchestration patterns for ZCode dynamic workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChiragSehra/zcode-ultracode-plugin.git"
+  },
+  "scripts": {
+    "test": "node scripts/check.mjs",
+    "lint": "node scripts/lint.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

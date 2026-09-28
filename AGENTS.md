@@ -22,6 +22,8 @@ architecture before making structural changes.
    one sitting; composition beats sprawl.
 6. Docs live in `docs/`; the research the design stands on is `docs/research-notes.md` —
    cite it rather than re-deriving.
+7. **Before committing, `npm test` (and `npm run lint` for doc changes) must pass** — it is
+   this repo's deterministic gate, the same rule `implement` enforces elsewhere.
 
 ## Quick reference
 

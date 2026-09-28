@@ -77,7 +77,7 @@ From the HN launch thread (200 pts) and diffuse follow-ups:
   tiers) → tiering happens per-run + session-model final synthesis; no per-subagent tool
   profiles → roles are persona+ask contracts; only 7 hook events (vs Claude Code's ~27);
   commands lack `!`-shell/`@file`; plugin format otherwise highly compatible (accepts
-  `.claude-plugin/` manifests; can consume Anthropic plugin marketplaces).
+  `plugin/.claude-plugin/plugin.json` manifests; can consume Anthropic plugin marketplaces).
 - No GLM-specific ultracode system existed at research time — this repo is that gap,
   filled on the middle path.
 
