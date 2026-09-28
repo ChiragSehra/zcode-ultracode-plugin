@@ -23,6 +23,9 @@ function walkMd(dir) {
 const files = ["README.md", "AGENTS.md", "DESIGN.md", "CONTRIBUTING.md", ...walkMd("docs"), ...walkMd("plugin")];
 const ROOT_PREFIXES = ["docs/", "plugin/", "examples/", "scripts/", ".zcode/", ".github/", ".claude-plugin/", "marketplace.json", "LICENSE", "package.json"];
 const PATH_EXT = /\.(md|ts|js|mjs|json|sh|ya?ml|toml|lockb)$/;
+// A repo-relative path must start at a real top-level entry; anything else
+// (e.g. `claude-security/workflows/scan.js` from another plugin) is external.
+const topLevel = new Set(readdirSync(root));
 
 let checked = 0;
 let failures = 0;
@@ -32,7 +35,8 @@ function isPathCandidate(t) {
   if (/^(https?:|~|\/)/.test(t)) return false; // external, home, absolute
   if (!t.includes("/")) return false;
   if (ROOT_PREFIXES.some((p) => t === p || t.startsWith(p))) return true;
-  return PATH_EXT.test(t) && /^[A-Za-z0-9._-]+\//.test(t);
+  if (!PATH_EXT.test(t) || !/^[A-Za-z0-9._-]+\//.test(t)) return false;
+  return topLevel.has(t.split("/")[0]);
 }
 
 for (const f of files) {
