@@ -1,10 +1,10 @@
 {
   "name": "ultracode",
-  "version": "1.0.0",
-  "description": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, six workflow patterns (research, implement, audit, decide, converge, sweep), role agents, and a destructive-command guard hook.",
+  "version": "1.1.0",
+  "description": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, commands and role agents for six workflow patterns (research, implement, audit, decide, converge, sweep; the saved workflows themselves install via scripts/install.sh or ship in the repo's .zcode/workflows/), and a destructive-command guard hook.",
   "description_i18n": {
-    "en": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, six workflow patterns (research, implement, audit, decide, converge, sweep), role agents, and a destructive-command guard hook.",
-    "zh-CN": "面向 GLM 的 Ultracode：预算感知的编排层 —— 路由 Skill、六个工作流模式（research、implement、audit、decide、converge、sweep）、角色 Agent，以及危险命令拦截 Hook。"
+    "en": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, commands and role agents for six workflow patterns (research, implement, audit, decide, converge, sweep; the saved workflows themselves install via scripts/install.sh or ship in the repo's .zcode/workflows/), and a destructive-command guard hook.",
+    "zh-CN": "面向 GLM 的 Ultracode：预算感知的编排层 —— 路由 Skill、六个工作流模式（research、implement、audit、decide、converge、sweep，saved workflows 本体经由 scripts/install.sh 安装或随仓库 .zcode/workflows/ 提供）的命令与角色 Agent，以及危险命令拦截 Hook。"
   },
   "author": {
     "name": "ChiragSehra"
@@ -19,5 +19,6 @@
   ],
   "commands": "commands",
   "skills": "skills",
-  "agents": "agents"
+  "agents": "agents",
+  "hooks": "hooks"
 }

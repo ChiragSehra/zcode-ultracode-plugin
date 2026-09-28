@@ -2,8 +2,8 @@
 description: "Converge on a goal: typed stop-conditions defined up front, a
   persistent worker and strict checker iterate (capped rounds, checker gaps
   carried into the next worker round), then a fresh verifier who saw no rounds
-  judges the result. Progress chart while it runs; deliverable artifact. Runs on
-  GLM-5.3-Flash."
+  judges the result. The returned conclusion lists the conditions. Progress
+  chart while it runs; deliverable artifact. Runs on GLM-5.3-Flash$max."
 whenToUse: Use when the user asks to iterate something until it's genuinely done
   against explicit criteria (/uc:converge or /ultracode routed to converge) — a
   polished draft, a passing benchmark, a checklist. For implement-with-tests,
@@ -128,8 +128,8 @@ if (outcome.path !== null && outcome.path.length > 0) {
 
 return {
   conclusion: converged
-    ? `Converged: all ${conditions.length} conditions verified by a fresh reviewer after ${maxRounds}-cap rounds.`
-    : `Not converged after ${maxRounds} round(s): ${finalPassing}/${conditions.length} conditions pass on final check. Best-so-far is reported; amend the run (raise maxRounds or sharpen the goal) to continue.`,
+    ? `Converged: all ${conditions.length} conditions verified by a fresh reviewer after ${maxRounds}-cap rounds. Conditions: ${conditions.map((c) => c.check).join("; ")}`
+    : `Not converged after ${maxRounds} round(s): ${finalPassing}/${conditions.length} conditions pass on final check. Best-so-far is reported; amend the run (raise maxRounds or sharpen the goal) to continue. Conditions: ${conditions.map((c) => c.check).join("; ")}`,
   findings: remainingGaps.map((g) => ({
     where: outcome.path ?? "goal",
     what: g,

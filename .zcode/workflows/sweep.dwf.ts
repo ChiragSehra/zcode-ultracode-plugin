@@ -1,8 +1,8 @@
 /* zcode-workflow
 description: "Sweep a file set: one fresh agent per matched file doing the same
   mechanical task, typed per-file results, failures filtered and listed (never
-  silently dropped), summary artifact. Runs on GLM-5.3-Flash. Cap: 30 files per
-  run."
+  silently dropped), summary artifact. Runs on GLM-5.3-Flash$low. Cap: 30 files
+  per run."
 whenToUse: Use when the user asks to apply the same mechanical change or
   extraction across many files (/uc:sweep or /ultracode routed to sweep) — add
   headers, migrate APIs, extract TODOs. For a change requiring cross-file
@@ -72,7 +72,7 @@ const markdown = [
   ...(deferred.length > 0 ? ["", `_${deferred.length} file(s) beyond the cap were not swept._`] : []),
 ].join("\n");
 await artifact.markdown("summary", markdown, {
-  title: `Sweep: ${globPattern}`,
+  title: `Sweep: ${globPattern.slice(0, 80)}`,
   description: `${okCount}/${results.length} file(s) completed cleanly.`,
   primary: true,
 });

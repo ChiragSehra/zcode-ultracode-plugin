@@ -6,7 +6,7 @@ The user requested the **implement** workflow. This is an explicit, binding work
 
 Task, verbatim: $ARGUMENTS
 
-Start `CreateWorkflow` with `saved: { name: "implement", args: { task: "$ARGUMENTS", size: "m" } }`
+Start `CreateWorkflow` with `saved: { name: "implement", args: { task: <the user's words, verbatim, quoted safely>, size: "m" } }`
 (`size: "s"` for a small change, `"l"` only if the user asked for scale; pass `gates` as
 JSON only if the user named specific commands). Set `subagent_model` to GLM-5.3-Flash$high
 (planner/reviewer want depth, implementers dominate the count — standing default). Name

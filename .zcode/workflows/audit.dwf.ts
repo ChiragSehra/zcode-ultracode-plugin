@@ -1,8 +1,8 @@
 /* zcode-workflow
 description: "Audit many units in parallel: one fresh auditor per unit with a
-  typed findings schema, independent confirmation of high-severity findings, one
-  shared judge dedupes and ranks everything, sourced audit-report artifact. Runs
-  on GLM-5.3-Flash."
+  typed findings schema, independent confirmation of high-severity findings (the
+  report says when none were attempted), one shared judge dedupes and ranks
+  everything, sourced audit-report artifact. Runs on GLM-5.3-Flash$high."
 whenToUse: Use when the user asks to audit or review many units for problems
   (/uc:audit or /ultracode routed to audit) — files, a directory, an endpoint
   list. For reviewing a small diff, prefer a plain Agent review; for one file,
@@ -124,11 +124,12 @@ const unitResults = await Promise.all(
     for (const f of marked) {
       report({ where: f.where, what: f.what, severity: f.severity, status: f.status });
     }
-    return { unit, findings: marked, notChecked: unitReport.notChecked };
+    return { unit, findings: marked, notChecked: unitReport.notChecked, attempts: confirmations.length };
   }),
 );
 const allFindings = unitResults.flatMap((r) => r.findings);
 const verifiedCount = allFindings.filter((f) => f.status === "verified").length;
+const confirmAttempts = unitResults.reduce((n, r) => n + r.attempts, 0);
 
 phase("Rank the findings and deduplicate across units");
 const triage = await agent("lead-auditor", {
@@ -155,7 +156,7 @@ const markdown = [
   ...(deferred.length > 0 ? ["", `_${deferred.length} unit(s) beyond the cap were not audited._`] : []),
 ].join("\n");
 await artifact.markdown("report", markdown, {
-  title: `Audit: ${target}`,
+  title: `Audit: ${target.slice(0, 80)}`,
   description: `${rankedList.length} finding(s), ${verifiedCount} confirmed, across ${audited.length} unit(s).`,
   primary: true,
 });
@@ -169,7 +170,12 @@ return {
     status: f.status,
     severity: f.severity,
   })),
-  verified: [`${verifiedCount}/${allFindings.length} findings independently reproduced`, `units covered: ${audited.join(", ")}`],
+  verified: [
+    ...(confirmAttempts > 0
+      ? [`${verifiedCount}/${allFindings.length} findings independently reproduced (${confirmAttempts} confirmation(s) attempted on high-severity findings)`]
+      : ["no high-severity findings raised; independent confirmation not attempted (confirmers run only on high-severity findings)"]),
+    `units covered: ${audited.join(", ")}`,
+  ],
   notCovered: [
     ...unitResults.flatMap((r) => r.notChecked.map((n) => `${r.unit}: ${n}`)),
     ...(deferred.length > 0 ? [`${deferred.length} unit(s) beyond the cap not audited: ${deferred.slice(0, 5).join(", ")}${deferred.length > 5 ? " …" : ""}`] : []),

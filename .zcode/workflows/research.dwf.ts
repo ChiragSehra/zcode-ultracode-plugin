@@ -1,7 +1,7 @@
 /* zcode-workflow
 description: "Fan-out research: parallel independent readers per sub-question,
   independent confirmation of load-bearing claims, cross-checked synthesis with
-  a sourced report artifact. Runs on GLM-5.3-Flash; the session model does
+  a sourced report artifact. Runs on GLM-5.3-Flash$high; the session model does
   final-mile synthesis of the returned packet."
 whenToUse: Use when the user asks to research a topic that needs multiple
   independent sources and cross-checked claims (/uc:research or /ultracode
@@ -157,7 +157,7 @@ const markdown = [
     : []),
 ].join("\n");
 await artifact.markdown("report", markdown, {
-  title: `Research: ${topic}`,
+  title: `Research: ${topic.slice(0, 80)}`,
   description: `${verifiedCount} of ${everyClaim.length} claims independently confirmed across ${subQuestions.length} sub-question(s).`,
   primary: true,
 });

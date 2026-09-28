@@ -1,5 +1,20 @@
 {
   "name": "ultracode",
-  "version": "1.0.0",
-  "description": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, six workflow patterns, role agents, and a destructive-command guard hook."
+  "version": "1.1.0",
+  "description": "Ultracode for GLM: a budget-aware orchestration layer — a router skill, commands and role agents for six workflow patterns (research, implement, audit, decide, converge, sweep; the saved workflows themselves install via scripts/install.sh or ship in the repo's .zcode/workflows/), and a destructive-command guard hook.",
+  "author": {
+    "name": "ChiragSehra"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ultracode",
+    "workflows",
+    "orchestration",
+    "multi-agent",
+    "glm"
+  ],
+  "commands": "commands",
+  "skills": "skills",
+  "agents": "agents",
+  "hooks": "hooks"
 }

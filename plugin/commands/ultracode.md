@@ -13,7 +13,7 @@ Follow the `ultracode` skill (this plugin) for policy:
    skill's pattern picker. If two patterns plausibly fit, ask the user which — one
    question, options named. If none fits, author an ad-hoc workflow per the skill's
    authoring standards.
-2. **Size class**: default M (≤ 12 subagents) unless the task is clearly small (S) or the
+2. **Size class**: default M (≤ 20 subagents) unless the task is clearly small (S) or the
    user asked for deep/wide (L needs explicit sizing).
 3. **Start it**: `CreateWorkflow` with `saved: { name, args }` and the pattern's tier from
    the skill's §3 table — `decide`/`converge` on GLM-5.3-Flash$max, `implement`/`research`/

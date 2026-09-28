@@ -49,6 +49,9 @@ actually changed.
 | run `stopped`, reason `provider` | sign-in/quota/model-plan issue — the error block names it; fix, then resume |
 | subagent parked on a question | its escalation is waiting for you (`dwfq-…` id in the notification or `GetWorkflowRun`) |
 | gate keeps failing after 2 repairs | the run says so in `notCovered` — that's the cap working; read the stderr in the report, fix the cause, `AmendWorkflow` |
+| run `stopped`, reason `provider`, code 1308 | the 5-hour credit pool is exhausted; the run auto-resumes at reset (verified in the dogfood log) — or top up / upgrade, then `ResumeWorkflowRun` |
+| amended run reads `undefined` args | `AmendWorkflow` does not carry a saved run's `args` — expect (and answer) the planner's escalation, or re-create from `saved:` with args when the cache is cold anyway |
+| artifact publish rejected: title > 120 chars | user text must be sliced before titling — every pattern now does `slice(0, 80)`; fix the script and `AmendWorkflow` |
 | `files.glob`/`files.grep` rejected | over-cap reads reject rather than truncate — narrow the pattern |
 | Bash denied by `[ultracode guard]` | it matched the destructive list — get the user to run/approve it; don't retry verbatim |
 
@@ -66,4 +69,6 @@ actually changed.
 2. Is ≥70% of the fan-out on Flash?
 3. Are round caps in the script (never `while (true)`)?
 4. Off-peak window open? If not and it can wait, schedule it there.
-5. Does the report's `verified`/`notCovered` tell the truth about what actually ran?
+5. **How many M-size runs already ran this 5-hour window?** Measured: 4 concurrent runs
+   (~43 agents, ~10M tokens) exhausted the pool mid-session. Keep ≤2 per window.
+6. Does the report's `verified`/`notCovered` tell the truth about what actually ran?

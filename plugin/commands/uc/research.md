@@ -6,7 +6,7 @@ The user requested the **research** workflow. This is an explicit, binding workf
 
 Topic, verbatim: $ARGUMENTS
 
-Start `CreateWorkflow` with `saved: { name: "research", args: { topic: "$ARGUMENTS", depth: "m" } }`
+Start `CreateWorkflow` with `saved: { name: "research", args: { topic: <the user's words, verbatim, quoted safely>, depth: "m" } }`
 (use `depth: "s"` for a focused question, `"l"` only if the user asked for depth).
 Set `subagent_model` to GLM-5.3-Flash$high — readers extract, confirmers judge (standing
 default; resolve via ListModels if rejected). Name the run in the user's language.
