@@ -42,6 +42,15 @@ cp .zcode/workflows/*.dwf.ts ~/.zcode/workflows/
 ./scripts/install.sh
 ```
 
+### Model IDs on a different machine/account
+
+Two plugin agents (`plugin/agents/uc-skeptic.md`, `plugin/agents/uc-quarantine-reader.md`)
+pin `model: account:zai-individual-coding-plan/GLM-5.3-Flash` — the model id as resolved
+on the author's machine. If your Z.ai account prefix differs (e.g. `bigmodel-…`), run
+`ListModels` in ZCode and update those two lines (and the tier examples in
+`plugin/skills/ultracode/SKILL.md` §3) to your own ids. The saved workflows set no model
+themselves — the caller applies the tier, so they need no edits.
+
 ## The one-line pitch
 
 Claude Code's ultracode puts the *loop in a script* and declares token cost a non-issue.

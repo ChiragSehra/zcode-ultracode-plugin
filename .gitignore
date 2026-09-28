@@ -9,3 +9,6 @@
 
 # node
 node_modules/
+
+# ZCode session/machine state
+.zcode/plans/

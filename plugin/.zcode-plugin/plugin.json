@@ -7,7 +7,7 @@
     "zh-CN": "面向 GLM 的 Ultracode：预算感知的编排层 —— 路由 Skill、六个工作流模式（research、implement、audit、decide、converge、sweep）、角色 Agent，以及危险命令拦截 Hook。"
   },
   "author": {
-    "name": "cs"
+    "name": "ChiragSehra"
   },
   "license": "MIT",
   "keywords": [
