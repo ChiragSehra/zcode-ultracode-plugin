@@ -8,7 +8,8 @@ Target, verbatim: $ARGUMENTS
 
 Start `CreateWorkflow` with `saved: { name: "audit", args: { target: "$ARGUMENTS" } }`
 (add `rubric: "…"` only if the user named specific criteria). Set `subagent_model` to
-GLM-5.3-Flash (standing default). Name the run in the user's language.
+GLM-5.3-Flash$high (auditors need real judgment — standing default). Name the run in the
+user's language.
 
 Do not poll the run. When the completion notification arrives, relay the report faithfully:
 confirmed findings with evidence and severity, unconfirmed ones labelled as such, what was

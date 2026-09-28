@@ -8,8 +8,8 @@ Topic, verbatim: $ARGUMENTS
 
 Start `CreateWorkflow` with `saved: { name: "research", args: { topic: "$ARGUMENTS", depth: "m" } }`
 (use `depth: "s"` for a focused question, `"l"` only if the user asked for depth).
-Set `subagent_model` to GLM-5.3-Flash (standing default; resolve via ListModels if
-rejected). Name the run in the user's language.
+Set `subagent_model` to GLM-5.3-Flash$high — readers extract, confirmers judge (standing
+default; resolve via ListModels if rejected). Name the run in the user's language.
 
 Do not poll the run. When the completion notification arrives, relay the report faithfully
 (conclusion, confirmed vs unconfirmed findings, verified, notCovered) and point the user at

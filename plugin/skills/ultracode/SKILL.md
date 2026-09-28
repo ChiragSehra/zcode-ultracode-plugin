@@ -54,16 +54,34 @@ and verification rules.
 ## 3. Model tier policy (standing user configuration — the user approved this default)
 
 The session model (GLM-5.3) routes, plans the run shape, and does **final-mile synthesis**
-of the returned report. Run subagents go on the cheap tier:
+of the returned report. Run subagents go on the cheap tier **at a reasoning level matched
+to the pattern's dominant role** (`subagent_model` is per-run, so the level follows the
+role that matters most in that run):
 
-- **All six patterns default to `subagent_model: GLM-5.3-Flash`** (`account:zai-individual-coding-plan/GLM-5.3-Flash`; resolve the exact id with `ListModels` if it is rejected — the account prefix can differ).
-- **Escalate the run to the session model** (omit `subagent_model`) only when the user
-  asks, or when the work is genuinely hard (subtle concurrent code, security-critical
-  review) — and say so when you do.
-- Rationale: the script itself is deterministic and free; subagent count × tier is the
-  whole cost curve; a Flash worker with a good packet and typed schema beats an
-  expensive model wading in the main transcript. This mirrors Claude ultracode's
-  orchestrator/worker split, with the economics the original ignores (GLM credits are pooled).
+| Pattern | Run model + reasoning | Why this level |
+|---|---|---|
+| `decide` | `GLM-5.3-Flash$max` | the judge and challenger ARE the value; ≤9 agents |
+| `converge` | `GLM-5.3-Flash$max` | worker/checker depth is the whole job; only 4 agents |
+| `implement` | `GLM-5.3-Flash$high` | planner/reviewer want depth, implementers dominate the count |
+| `research` | `GLM-5.3-Flash$high` | readers extract, confirmers judge |
+| `audit` | `GLM-5.3-Flash$high` | auditors need real judgment against code |
+| `sweep` | `GLM-5.3-Flash$low` | mechanical per-file work; pure fan-out |
+
+Full id form: `account:zai-individual-coding-plan/GLM-5.3-Flash$max` (likewise `$high`,
+`$low`); resolve the exact id with `ListModels` if it is rejected — the account prefix can
+differ between machines.
+
+- **Escalate**: one level up — or to the session model by omitting `subagent_model` — when
+  the user asks or the work is genuinely hard (subtle concurrency, security-critical
+  review). Say so when you do.
+- **Demote**: an ad-hoc workflow whose subagents are mechanical (extraction, formatting,
+  checklist running) takes `$low` honestly — the typed schema is the quality floor, not
+  the reasoning level.
+- Rationale: the script itself is deterministic and free; **subagent count × model ×
+  reasoning level is the whole cost curve**. Live test runs with every subagent at `$max`
+  spent most of their wall-clock rate-limited (~30–40 min each); level tiering is the
+  cheapest speed/credit lever there is. A Flash subagent at the right level with a good
+  packet and a typed schema still beats an expensive model wading in the main transcript.
 
 ## 4. Size classes and budgets
 

@@ -2,10 +2,12 @@
 
 All patterns are saved workflows in `.zcode/workflows/` (run via `CreateWorkflow` with
 `saved: { name, args }`, or through the `/uc:*` commands). No pattern sets a model itself:
-per SKILL.md §3 the caller puts subagents on **GLM-5.3-Flash** (a bare `saved:` run keeps
-them on the session model), and the session model routes, plans the run shape, and does
-final-mile synthesis of the returned report. Plan review is deliberately not the session's
-job — it is a fresh subagent. Agent counts below are worst cases at default size.
+per SKILL.md §3 the caller puts subagents on **GLM-5.3-Flash** at a per-pattern reasoning
+level — `decide`/`converge` at `$max`, `implement`/`research`/`audit` at `$high`, `sweep`
+at `$low` (a bare `saved:` run keeps them on the session model at its default level) — and
+the session model routes, plans the run shape, and does final-mile synthesis of the
+returned report. Plan review is deliberately not the session's job — it is a fresh
+subagent. Agent counts below are worst cases at default size.
 
 ```
 Need an answer or a judgment?
@@ -38,7 +40,7 @@ end-to-end; failures are labelled, never dropped.
 | `topic` | string | required | the user's words |
 | `depth` | s / m / l | m | s=2 questions, m=4, l=9; confirmers: 1/question (m), 2 (l) |
 
-Worst case: s=5, m=10, l=29 agents. Deliverable: sourced markdown report (primary artifact).
+Worst case: s=5, m=10, l=29 agents. Run tier: GLM-5.3-Flash$high. Deliverable: sourced markdown report (primary artifact).
 
 ## implement — plan → execute → gate → verify (the flagship)
 
@@ -57,7 +59,8 @@ The strongest gate always runs at least once after the last change.
 | `gates` | json | auto-detect | forced check: `{"kind":"npm\|make\|cargo\|pytest\|node","args":["test.js"]}` (`node` runs the files in `args`). Auto-detected when omitted: `npm test` (`package.json` `scripts.test`), `make test` (`Makefile`), `cargo test` (`Cargo.toml`) — every one present runs; none found in a git repo → `git diff --check` (whitespace/conflict markers). `pytest` and `node` are override-only. |
 
 Worst case: s=14, m=19, l=47 agents — planner, plan reviewer, ≤cap implementers, repairer,
-≤cap reviewers, plus at most 4 fixers in the fix round. Deliverable: implementation report
+≤cap reviewers, plus at most 4 fixers in the fix round. Run tier: GLM-5.3-Flash$high.
+Deliverable: implementation report
 with gate table, file-review table, diff excerpt (primary artifact).
 
 ## audit — classify-and-act + generate-and-filter
@@ -74,7 +77,7 @@ ranking) → audit report.
 | `target` | string | required | glob, directory, or description |
 | `rubric` | string | – | criteria the audit must apply |
 
-Cap: 8 units/run (worst case 18 agents). Unconfirmed findings stay in the report, labelled.
+Cap: 8 units/run (worst case 18 agents; run tier GLM-5.3-Flash$high). Unconfirmed findings stay in the report, labelled.
 
 ## decide — tournament
 
@@ -91,7 +94,7 @@ stress-tests the verdict (assumptions that flip it, failure modes).
 | `question` | string | required | the decision |
 | `options` | json | – | fixed candidate list |
 
-Worst case: 9 agents. Deliverable: ranking table + tradeoffs + stress-test (primary).
+Worst case: 9 agents. Run tier: GLM-5.3-Flash$max. Deliverable: ranking table + tradeoffs + stress-test (primary).
 
 ## converge — loop-until-done
 
@@ -108,7 +111,7 @@ state → converged, or best-so-far with the remaining gaps stated plainly.
 | `goal` | string | required | include what "done" means if you can |
 | `maxRounds` | number | 3 | hard cap 6 |
 
-4 agents regardless of rounds (persistence, not fan-out, is the trick).
+4 agents regardless of rounds (persistence, not fan-out, is the trick). Run tier: GLM-5.3-Flash$max.
 
 ## sweep — generate-and-filter / pipeline
 
@@ -122,7 +125,7 @@ Arc: glob the file set → one fresh agent per file, typed result, per-item fail
 | `glob` | string | required | e.g. `src/**/*.ts` |
 | `task` | string | required | the mechanical per-file task |
 
-Cap: 30 files/run (worst case 30 agents). Beyond that, split the glob.
+Cap: 30 files/run (worst case 30 agents; run tier GLM-5.3-Flash$low). Beyond that, split the glob.
 
 ---
 

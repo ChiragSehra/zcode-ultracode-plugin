@@ -100,7 +100,8 @@ These are the hard facts of the ZCode runtime that the design must respect:
 │     GLM-5.3        — session: routing, planning review, final         │
 │                      synthesis, high-stakes judging                   │
 │     GLM-5.3-Flash  — run subagents: readers, auditors, workers,       │
-│                      skeptics, judges (~⅓ credit cost)                │
+│                      skeptics, judges (~⅓ credit cost, at per-pattern │
+│                      reasoning levels $low–$max)                      │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -173,9 +174,11 @@ confirmer; if fan-out is expensive, verification rounds are capped at 2 before e
 | L | ≤ 48 | explicit in args | large sweep, deep research |
 | XL | > 48 | explicit `size:"xl"` only | migrations, repo-wide change |
 
-- **Tier policy**: ≥ 70% of a run's subagents on Flash wherever the pattern allows; the
-  session model (already paid for) does final synthesis instead of an expensive in-run
-  synthesizer (§3 constraint 2).
+- **Tier policy**: subagents on Flash wherever the pattern allows, at a per-pattern
+  reasoning level (mechanical roles `$low`, mixed `$high`, judgment `$max` — the live
+  `$max`-everywhere test runs were the slowest configuration measured); the session model
+  (already paid for) does final synthesis instead of an expensive in-run synthesizer
+  (§3 constraint 2).
 - **Round caps**: gate-repair ≤ 2, verify-fix ≤ 2, converge rounds ≤ `maxRounds` (default 3),
   then escalate-with-best-so-far. No unbounded loops, ever (P4).
 - **Amend-first revision**: re-running a fixed script through `AmendWorkflow` replays every

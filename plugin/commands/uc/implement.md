@@ -8,8 +8,9 @@ Task, verbatim: $ARGUMENTS
 
 Start `CreateWorkflow` with `saved: { name: "implement", args: { task: "$ARGUMENTS", size: "m" } }`
 (`size: "s"` for a small change, `"l"` only if the user asked for scale; pass `gates` as
-JSON only if the user named specific commands). Set `subagent_model` to GLM-5.3-Flash
-(standing default). Name the run in the user's language.
+JSON only if the user named specific commands). Set `subagent_model` to GLM-5.3-Flash$high
+(planner/reviewer want depth, implementers dominate the count — standing default). Name
+the run in the user's language.
 
 Do not poll the run. When the completion notification arrives, relay the report faithfully:
 what was implemented, which gates passed (`verified`), what skeptics flagged, anything that

@@ -54,7 +54,8 @@ themselves — the caller applies the tier, so they need no edits.
 ## The one-line pitch
 
 Claude Code's ultracode puts the *loop in a script* and declares token cost a non-issue.
-This system keeps the loop-in-a-script, swaps in GLM's two-tier models (5.3 orchestrates,
-Flash does the fan-out), and puts the economics back in: size classes, round caps,
+This system keeps the loop-in-a-script, swaps in GLM's two-tier models with per-pattern
+reasoning levels (5.3 orchestrates; Flash fans out — `$low` for mechanical work, `$high`
+for mixed, `$max` for judgment), and puts the economics back in: size classes, round caps,
 deterministic gates before LLM judgment, and human escalation instead of infinite
 convergence.

@@ -4,10 +4,13 @@
 
 Every workflow subagent is a full model session with its own context. The session model
 (GLM-5.3) routes and synthesizes; runs default to **GLM-5.3-Flash** at roughly a third of
-the credit cost. So the levers, in order of power: **fan-out width** (agents), **tier**
-(Flash vs 5.3), **rounds** (caps are written into every pattern), and **re-use**
-(`AmendWorkflow` replays unchanged asks at zero tokens). Sizes: S≈≤8, M≈≤18 (default),
-L≈≤36 (explicit), XL>36 (explicit only — schedule off-peak).
+the credit cost, at a reasoning level matched to the pattern's dominant role (`$max` for
+decide/converge, `$high` for implement/research/audit, `$low` for sweep — the default
+without a suffix is the model's own default, which is `max`). So the levers, in order of
+power: **fan-out width** (agents), **tier** (model and reasoning level), **rounds** (caps
+are written into every pattern), and **re-use** (`AmendWorkflow` replays unchanged asks at
+zero tokens). Sizes: S≤14, M≤20 (default), L≤48 (explicit), XL>48 (explicit only —
+schedule off-peak).
 
 ## GLM Coding Plan economics (verify current numbers at docs.z.ai/devpack)
 
