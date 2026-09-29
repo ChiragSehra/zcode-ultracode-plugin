@@ -36,3 +36,4 @@ architecture before making structural changes.
 | `/uc:decide <question>` | decide | tournament with pairwise judging |
 | `/uc:converge <goal>` | converge | loop until typed stop-conditions pass (capped) |
 | `/uc:sweep <glob>` | sweep | one fresh agent per file/item, typed results |
+| `/uc:memorize <obs> \|\|\| <evidence>` | memorize | confirm a lesson against evidence, merge into `.ultracode/memory.md` |

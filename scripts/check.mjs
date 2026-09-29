@@ -133,6 +133,21 @@ if (existsSync(rel("plugin/workflows"))) {
   }
 }
 
+// --- project memory keeps its shape (if present) ---
+if (existsSync(rel(".ultracode/memory.md"))) {
+  const mem = readFileSync(rel(".ultracode/memory.md"), "utf8");
+  if (!mem.startsWith("# ultracode project memory")) fail(".ultracode/memory.md: missing standard header");
+  const indexMatch = /## Index\n\n([\s\S]*?)\n\n## Lessons/.exec(mem);
+  if (indexMatch === null) fail(".ultracode/memory.md: missing ## Index / ## Lessons structure");
+  else if (indexMatch[1].split("\n").filter((l) => l.trim().startsWith("- ")).length > 30)
+    fail(".ultracode/memory.md: index exceeds the 30-line cap");
+  const lessonBlocks = mem.split(/^### /m).slice(1);
+  for (const block of lessonBlocks) {
+    if (!/^Evidence: /m.test(block)) fail(`.ultracode/memory.md: lesson '### ${block.split("\n")[0]}' lacks an Evidence line`);
+  }
+  pass(`project memory well-formed (${lessonBlocks.length} lesson(s), evidence-cited)`);
+}
+
 // --- the six pattern workflows exist and keep their shape ---
 const patterns = ["research", "implement", "audit", "decide", "converge", "sweep"];
 for (const name of patterns) {

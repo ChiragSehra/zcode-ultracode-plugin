@@ -246,8 +246,11 @@ AGENTS.md                          how ZCode sessions in this repo should behave
 2. **Gate auto-discovery** — detect a repo's build/test entry points automatically instead
    of asking; v1 takes them as args with sensible fallbacks (`git diff --check`,
    `npm test` if present).
-3. **Cross-run memory** — distill completed runs into reusable agent/pattern refinements
-   (the "instincts" idea from the research, done locally).
+3. **Cross-run memory** — ~~deferred~~ **v1 shipped (2026-09-29)**: the `memorize`
+   workflow (distill → evidence-confirm → append-or-merge) plus the consult contract in
+   the skill, defensively designed per `docs/memory.md` (evidence-cited, advisory-only,
+   30-line index cap, falsifiable). Graduation machinery beyond recurrence counting is
+   deferred until there are enough runs to need it.
 4. **Cost telemetry** — per-run credit accounting surfaced in artifacts once the harness
    exposes token counts per subagent.
 
