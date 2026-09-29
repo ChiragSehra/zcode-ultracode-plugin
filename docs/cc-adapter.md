@@ -75,7 +75,8 @@ runtime's trust model, paid only by gate-bearing patterns.
 | `sweep` | **ported + runtime-tested** (`plugin/workflows/sweep.js`) — 3/3 files swept cleanly |
 | `converge` | **ported + runtime-tested** (`plugin/workflows/converge.js`) — converged round 1, fresh-verifier pass; no gates needed (its verification is checker agents) |
 | `implement` | **ported + runtime-tested** (`plugin/workflows/implement.js`) — dual-runner gate agreed *pass*, honestly labelled agent-executed; an external deterministic run of the same command confirmed exit 0 |
-| `research`, `audit` | portable with the same techniques (confirmers → schema'd second agents); not yet ported |
+| `research` | **ported, syntax-checked, live test deferred** (`plugin/workflows/research.js`) — the live run hit the subscription's credit limit; re-run when credits reset (harness + commands below) |
+| `audit` | **ported, syntax-checked, live test deferred** (`plugin/workflows/audit.js`) — same; carries the honest verified-line lesson from the ZCode dogfood |
 
 Both ports are syntax-checked as ESM by this repo's `npm test` gate.
 
@@ -117,6 +118,12 @@ Lessons from the live run:
 5. **Converge ports without the gate problem** — its verification was always checker
    agents; round history carried in prompts substitutes for actor persistence (at full
    token price per round, documented in the degradations).
+6. **Subscription credits run out mid-campaign** — the `research` live test returned
+   "Credit balance is too low" after the five successful runs. The port shipped as
+   syntax-checked with the live test deferred; when credits reset, the staged harness
+   (scratch project with `.claude/workflows/` holding all six ports) runs it with:
+   `claude -p '/research {"topic": "...", "depth": "s"}' --model sonnet --dangerously-skip-permissions`
+   (likewise `/audit {"target": "...", "rubric": "..."}`).
 
 ## Running the ports
 
