@@ -43,15 +43,42 @@ code.claude.com/docs/en/workflows.
 
 | Pattern | Status |
 |---|---|
-| `decide` | **ported** (`plugin/workflows/decide.js`) — pure-agentic, no gates needed; deliverable written by a final agent (`ultracode-decision-report.md`) |
-| `sweep` | **ported** (`plugin/workflows/sweep.js`) — inventory agent replaces `files.glob`; 30-file cap kept; summary via `log()` |
+| `decide` | **ported + runtime-tested** (`plugin/workflows/decide.js`) — full tournament ran live; report on disk |
+| `sweep` | **ported + runtime-tested** (`plugin/workflows/sweep.js`) — 3/3 files swept cleanly |
 | `research`, `audit` | portable with the same techniques (confirmers → schema'd second agents); not yet ported |
 | `implement`, `converge` | **blocked on the gate redesign** above — the patterns' value is the deterministic gate; porting them without it would be ultracode-in-name-only |
 
-Both ports are syntax-checked as ESM by this repo's `npm test` gate. They are **not
-runtime-tested against a live Claude Code** (no CC session was spent); treat them as
-faithful-to-documentation and expect minor friction on first real run — the meta/args/
-schema/label contract is taken from CC's own shipped workflows on disk.
+Both ports are syntax-checked as ESM by this repo's `npm test` gate.
+
+## Live validation (2026-09-29, CC 2.1.278, Pro subscription)
+
+Run headless in a scratch project with the ports copied into `.claude/workflows/`:
+
+```sh
+cd <scratch-project>   # with .claude/workflows/{decide,sweep}.js inside
+claude -p '/sweep {"glob": "*.txt", "task": "..."}' --model sonnet --dangerously-skip-permissions
+claude -p '/decide {"question": "...", "options": ["a", "b", "c"]}' --model sonnet --dangerously-skip-permissions
+```
+
+Results: `sweep` — inventory agent + 3 workers, all 3 files modified, 0 failures, correct
+summary. `decide` — full tournament (framer → 3 advocates → pairwise judge → challenger →
+report-writer), 8 KB `ultracode-decision-report.md` on disk with the designed shape:
+winner, decisive pairwise comparison, ranked table, tradeoffs, failure-mode disclosure.
+Billed to the subscription (Keychain OAuth), `--model sonnet` to spare the session's
+`opus[1m]` default.
+
+Lessons from the live run:
+
+1. **Slash-command invocation works headless** — `claude -p '/<name> {json-args}'` reaches
+   the saved workflow; the ports' defensive `args` parsing (string-or-object) held.
+2. **Schema validates shape, not substance.** One advocate returned a stub brief
+   (`theCase: "test"`, risks `["a","b"]`) that passed validation; the judge honestly
+   disclosed and discounted it, and the port now guards itself (briefs under 40 chars are
+   excluded and counted as failures). Same exposure exists on the ZCode side — typed
+   schemas are a floor, not a judge of content.
+3. **`--dangerously-skip-permissions` was needed headless** to keep the Workflow tool and
+   subagent writes from blocking on prompts in a non-TTY; in an interactive session the
+   normal permission flow applies.
 
 ## Running the ports
 

@@ -138,7 +138,9 @@ if (question === "") {
     );
     const okBriefs = briefs
       .map((b, i) => ({ candidate: candidates[i], brief: b }))
-      .filter((x) => x.brief !== null);
+      // schema validates shape, not substance: a stub brief ("theCase: test") passes —
+      // learned live; exclude anything too thin to be an argued case
+      .filter((x) => x.brief !== null && x.brief.theCase.length >= 40);
     const failedBriefs = briefs.length - okBriefs.length;
     if (failedBriefs > 0) {
       log(`${failedBriefs} advocate(s) failed and are excluded from the judgment`);
